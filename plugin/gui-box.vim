@@ -1,10 +1,10 @@
 " GUI Box
 " Maintainer: David Munger
 " Email: mungerd@gmail.com
-" Version: 0.5
+" Version: 0.5.1
 
 
-" TODO: color categories?
+" TODO: doc color categories
 
 
 if !has("gui_running")
@@ -20,12 +20,12 @@ let g:gui_box_loaded = 1
 " }}}
 
 " Settings {{{
-if !exists("g:gui_font_list")
+if !exists("g:gui_fonts")
     let g:gui_fonts = [&guifont]
 endif
 
-if !exists("g:gui_colorscheme_list")
-    let g:gui_colors = ['default']
+if !exists("g:gui_colors")
+	let g:gui_colors = ['=LIGHT=', 'default']
 endif
 " }}}
 
@@ -49,6 +49,7 @@ function! s:color_menu()
 	call append('$', ["", "<Esc>: close", "<Space>: activate", "<Enter>: act+close"])
 	0delete
 	syntax match Comment /^<.*/
+	syntax match Title /^=.*=$/
 
 	map <buffer> <silent> <Esc> 	:bdelete<CR>
 	map <buffer> <silent> <Space> 	:call <SID>color_menu_activate(0)<CR>
@@ -65,6 +66,11 @@ function! s:color_menu_activate(close)
 	endif
 
     let color = getline('.')
+
+	if (empty(color) || color[0] == '=')
+		return
+	endif
+
 	if (a:close)
 		bdelete
 	endif
@@ -82,6 +88,7 @@ function! s:font_menu()
 	call append('$', ["", "<Esc>: close", "<Space>: activate", "<Enter>: act+close"])
 	0delete
 	syntax match Comment /^<.*/
+	syntax match Title /^=.*=$/
 
 	map <buffer> <silent> <Esc> 	:bdelete<CR>
 	map <buffer> <silent> <Space> 	:call <SID>font_menu_activate(0)<CR>
@@ -98,6 +105,11 @@ function! s:font_menu_activate(close)
 	endif
 
     let font = getline('.')
+
+	if (empty(font) || font[0] == '=')
+		return
+	endif
+
 	if (a:close)
 		bdelete
 	endif

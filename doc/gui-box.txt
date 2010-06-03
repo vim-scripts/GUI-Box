@@ -27,10 +27,19 @@ Variables ~
 *g:gui_fonts*
 	List of font names, e.g. >
 	let g:gui_fonts = ['Monospace 10', 'Lucida Console 10', 'Courier New 10']
+<
+	The font list can also comprise blank lines, and separators can be
+	added by enclosing them in a pair of '=', e.g. >
+	let g:gui_fonts = ['=Free=', 'Monospace 10', '', '=Non-Free=', 'Lucida Console 10']
 
 *g:gui_colors*
 	List of color scheme names, e.g. >
-	let g:gui_colors = ['ego', 'corporation', 'github', 'satori', 'sienna']
+	let g:gui_colors = ['darkbone', 'corporation', 'sienna', 'satori']
+<
+	The color list can also comprise blank lines, and separators can be
+	added by enclosing them in a pair of '=', e.g. >
+	let g:gui_colors = ['=DARK=', 'darkbone', 'corporation', '', '=LIGHT=', 'sienna', 'satori']
+
 
 Mappings ~
 
