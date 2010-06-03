@@ -1,0 +1,8 @@
+This is a mirror of http://www.vim.org/scripts/script.php?script_id=3108
+
+This plugin provides:
+- A color scheme menu to choose among your favorite color schemes;
+- A font menu to choose among your favorite fonts;
+- A command to toggle the GUI menu.
+
+See ":help gui-box" for details.
