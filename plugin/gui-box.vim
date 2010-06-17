@@ -1,10 +1,7 @@
 " GUI Box
 " Maintainer: David Munger
 " Email: mungerd@gmail.com
-" Version: 0.5.1
-
-
-" TODO: doc color categories
+" Version: 0.6
 
 
 if !has("gui_running")
@@ -20,12 +17,20 @@ let g:gui_box_loaded = 1
 " }}}
 
 " Settings {{{
+if !exists("g:gui_box_width")
+    let g:gui_box_width = 22
+endif
+
 if !exists("g:gui_fonts")
     let g:gui_fonts = [&guifont]
 endif
 
 if !exists("g:gui_colors")
 	let g:gui_colors = ['=LIGHT=', 'default']
+endif
+
+if !exists("g:gui_default_font_size")
+	let g:gui_default_font_size = 9
 endif
 " }}}
 
@@ -43,7 +48,8 @@ noremap <silent> <script> <Plug>ToggleMenuBar :call <SID>ToggleMenuBar()<CR>
 
 " Color Menu {{{
 function! s:color_menu()
-	20vnew +setlocal\ buftype=nofile Color\ Menu
+	execute g:gui_box_width . 'vnew +setlocal\ buftype=nofile Color\ Menu'
+	set modifiable
 
     call append('$', g:gui_colors)
 	call append('$', ["", "<Esc>: close", "<Space>: activate", "<Enter>: act+close"])
@@ -82,10 +88,12 @@ map <silent> <Plug>ColorMenu :call <SID>color_menu()<CR>
 
 " Font Menu {{{
 function! s:font_menu()
-	20vnew +setlocal\ buftype=nofile Font\ Menu
+	execute g:gui_box_width . 'vnew +setlocal\ buftype=nofile Font\ Menu'
+	set modifiable
 
     call append('$', g:gui_fonts)
-	call append('$', ["", "<Esc>: close", "<Space>: activate", "<Enter>: act+close"])
+	call append('$', ["", "<Esc>: close", "<Space>: activate", "<Enter>: act+close",
+				\ "K/+: bigger", "J/-: smaller"])
 	0delete
 	syntax match Comment /^<.*/
 	syntax match Title /^=.*=$/
@@ -93,14 +101,30 @@ function! s:font_menu()
 	map <buffer> <silent> <Esc> 	:bdelete<CR>
 	map <buffer> <silent> <Space> 	:call <SID>font_menu_activate(0)<CR>
 	map <buffer> <silent> <CR> 		:call <SID>font_menu_activate(1)<CR>
-    call search('^' . &guifont . '$', 'w')
+	map <buffer> <silent> K 		:call <SID>font_menu_resize(0.5)<CR><Space>
+	map <buffer> <silent> J 		:call <SID>font_menu_resize(-0.5)<CR><Space>
+	map <buffer> <silent> + 		K
+	map <buffer> <silent> - 		J
+    
+	if search('^' . &guifont . '$', 'w')
+		let s:inserted_fonts = 0
+	else
+		" if font not found, try to match without size and insert line
+		let font_str = &guifont
+		while !search('^' . font_str, 'w') && font_str =~ '[ 0-9\.]$'
+			let font_str = font_str[:-2]
+		endwhile
+		call append(line('.') - 1, &guifont)
+		normal k
+		let s:inserted_fonts = 1
+	endif
 
     setlocal cursorline nomodifiable
 endfunction
 
 function! s:font_menu_activate(close)
 
-	if getpos('.')[1] > len(g:gui_fonts)
+	if getpos('.')[1] > len(g:gui_fonts) + s:inserted_fonts
 		return
 	endif
 
@@ -114,6 +138,27 @@ function! s:font_menu_activate(close)
 		bdelete
 	endif
 	execute 'set guifont=' . escape(font, ' ')
+endfunction
+
+function! s:font_menu_resize(delta)
+
+	let font = getline('.')
+
+	let size = matchstr(font, '[0-9\.]*$')
+
+	if empty(size)
+		" if no size, start with default size
+		let newfont = font . ' ' . printf('%g', g:gui_default_font_size)
+	else
+		" change size
+		let newsize = printf("%g", str2float(size) + a:delta)
+		let newfont = substitute(font, escape(size, '.') . '$', escape(newsize, '.'), '')
+	endif
+
+	set modifiable
+	call setline('.', newfont)
+	set nomodifiable
+
 endfunction
 
 map <silent> <Plug>FontMenu :call <SID>font_menu()<CR>
