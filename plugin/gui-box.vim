@@ -1,7 +1,7 @@
 " GUI Box
 " Maintainer: David Munger
 " Email: mungerd@gmail.com
-" Version: 0.6
+" Version: 0.6.1
 
 
 if !has("gui_running")
@@ -49,7 +49,7 @@ noremap <silent> <script> <Plug>ToggleMenuBar :call <SID>ToggleMenuBar()<CR>
 " Color Menu {{{
 function! s:color_menu()
 	execute g:gui_box_width . 'vnew +setlocal\ buftype=nofile Color\ Menu'
-	set modifiable
+	setlocal modifiable
 
     call append('$', g:gui_colors)
 	call append('$', ["", "<Esc>: close", "<Space>: activate", "<Enter>: act+close"])
@@ -89,7 +89,7 @@ map <silent> <Plug>ColorMenu :call <SID>color_menu()<CR>
 " Font Menu {{{
 function! s:font_menu()
 	execute g:gui_box_width . 'vnew +setlocal\ buftype=nofile Font\ Menu'
-	set modifiable
+	setlocal modifiable
 
     call append('$', g:gui_fonts)
 	call append('$', ["", "<Esc>: close", "<Space>: activate", "<Enter>: act+close",
@@ -155,9 +155,9 @@ function! s:font_menu_resize(delta)
 		let newfont = substitute(font, escape(size, '.') . '$', escape(newsize, '.'), '')
 	endif
 
-	set modifiable
+	setlocal modifiable
 	call setline('.', newfont)
-	set nomodifiable
+	setlocal nomodifiable
 
 endfunction
 
