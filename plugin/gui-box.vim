@@ -1,7 +1,7 @@
 " GUI Box
 " Maintainer: David Munger
 " Email: mungerd@gmail.com
-" Version: 0.6.1
+" Version: 0.6.2
 
 
 if !has("gui_running")
@@ -48,21 +48,30 @@ noremap <silent> <script> <Plug>ToggleMenuBar :call <SID>ToggleMenuBar()<CR>
 
 " Color Menu {{{
 function! s:color_menu()
-	execute g:gui_box_width . 'vnew +setlocal\ buftype=nofile Color\ Menu'
-	setlocal modifiable
+
+	" check if window already exists
+	let winnr = bufwinnr(bufnr('Color Menu'))
+	if winnr >= 0
+		silent execute winnr . 'wincmd w'
+		return
+	endif
+
+	execute g:gui_box_width . 'vnew Color\ Menu'
+	setlocal buftype=nofile bufhidden=wipe nobuflisted noswapfile nowrap cursorline nospell
 
     call append('$', g:gui_colors)
 	call append('$', ["", "<Esc>: close", "<Space>: activate", "<Enter>: act+close"])
 	0delete
-	syntax match Comment /^<.*/
-	syntax match Title /^=.*=$/
+	syntax match PreProc	/^<.*/
+	syntax match Title		/^=.*=$/
 
-	map <buffer> <silent> <Esc> 	:bdelete<CR>
+	map <buffer> <silent> <Esc> 	:bwipeout<CR>
 	map <buffer> <silent> <Space> 	:call <SID>color_menu_activate(0)<CR>
 	map <buffer> <silent> <CR> 		:call <SID>color_menu_activate(1)<CR>
+	nnoremap <buffer> <silent> G	G4k
     call search('^' . g:colors_name . '$', 'w')
 
-    setlocal cursorline nomodifiable
+    setlocal nomodifiable
 endfunction
 
 function! s:color_menu_activate(close)
@@ -78,7 +87,7 @@ function! s:color_menu_activate(close)
 	endif
 
 	if (a:close)
-		bdelete
+		bwipeout
 	endif
 	execute 'colorscheme ' . color
 endfunction
@@ -88,23 +97,32 @@ map <silent> <Plug>ColorMenu :call <SID>color_menu()<CR>
 
 " Font Menu {{{
 function! s:font_menu()
-	execute g:gui_box_width . 'vnew +setlocal\ buftype=nofile Font\ Menu'
-	setlocal modifiable
+
+	" check if window already exists
+	let winnr = bufwinnr(bufnr('Font Menu'))
+	if winnr >= 0
+		silent execute winnr . 'wincmd w'
+		return
+	endif
+
+	execute g:gui_box_width . 'vnew Font\ Menu'
+	setlocal buftype=nofile bufhidden=wipe nobuflisted noswapfile nowrap cursorline nospell
 
     call append('$', g:gui_fonts)
 	call append('$', ["", "<Esc>: close", "<Space>: activate", "<Enter>: act+close",
 				\ "K/+: bigger", "J/-: smaller"])
 	0delete
-	syntax match Comment /^<.*/
-	syntax match Title /^=.*=$/
+	syntax match PreProc	/.*:.*/
+	syntax match Title		/^=.*=$/
 
-	map <buffer> <silent> <Esc> 	:bdelete<CR>
+	map <buffer> <silent> <Esc> 	:bwipeout<CR>
 	map <buffer> <silent> <Space> 	:call <SID>font_menu_activate(0)<CR>
 	map <buffer> <silent> <CR> 		:call <SID>font_menu_activate(1)<CR>
 	map <buffer> <silent> K 		:call <SID>font_menu_resize(0.5)<CR><Space>
 	map <buffer> <silent> J 		:call <SID>font_menu_resize(-0.5)<CR><Space>
 	map <buffer> <silent> + 		K
 	map <buffer> <silent> - 		J
+	nnoremap <buffer> <silent> G	G6k
     
 	if search('^' . &guifont . '$', 'w')
 		let s:inserted_fonts = 0
@@ -119,7 +137,7 @@ function! s:font_menu()
 		let s:inserted_fonts = 1
 	endif
 
-    setlocal cursorline nomodifiable
+    setlocal nomodifiable
 endfunction
 
 function! s:font_menu_activate(close)
@@ -135,24 +153,24 @@ function! s:font_menu_activate(close)
 	endif
 
 	if (a:close)
-		bdelete
+		bwipeout
 	endif
 	execute 'set guifont=' . escape(font, ' ')
 endfunction
 
-function! s:font_menu_resize(delta)
+function! s:font_menu_resize(increment)
 
 	let font = getline('.')
 
-	let size = matchstr(font, '[0-9\.]*$')
+	let size = matchstr(font, '\zs[0-9\.]*\ze\s*$')
 
 	if empty(size)
 		" if no size, start with default size
 		let newfont = font . ' ' . printf('%g', g:gui_default_font_size)
 	else
 		" change size
-		let newsize = printf("%g", str2float(size) + a:delta)
-		let newfont = substitute(font, escape(size, '.') . '$', escape(newsize, '.'), '')
+		let newsize = printf("%g", str2float(size) + a:increment)
+		let newfont = substitute(font, escape(size, '.') . '\s*$', escape(newsize, '.'), '')
 	endif
 
 	setlocal modifiable
